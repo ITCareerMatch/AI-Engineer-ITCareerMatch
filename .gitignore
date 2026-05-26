@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+*:Zone.Identifier
+.DS_Store
+
+env/
+venv/
+env_new/
+
+.env
