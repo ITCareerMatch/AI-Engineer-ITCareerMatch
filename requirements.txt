@@ -1,5 +1,5 @@
 fastapi==0.136.1
 uvicorn==0.47.0
 pydantic==2.13.4
-tensorflow-cpu==2.15.1
-transformers==4.41.0
+tensorflow-cpu==2.15.0
+transformers==4.38.2
