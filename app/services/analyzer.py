@@ -2,6 +2,7 @@ from typing import List, Dict
 from app.utils.text_cleaner import clean_it_text
 from app.services.skill_extractor import extract_skills
 
+# Fungsi untuk menganalisis kecocokan dan gap skill antara CV dan deskripsi pekerjaan
 def analyze_match_and_gap(cv_skills: List[str], job_desc: str) -> Dict:
     cleaned_job = clean_it_text(job_desc)
     job_skills = extract_skills(cleaned_job)

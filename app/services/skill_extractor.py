@@ -48,7 +48,7 @@ MASTER_SKILLS = [
     "Apache Kafka", "RabbitMQ", "REST API", "GraphQL", "gRPC", "Microservices", "Serverless"
 ]
 
-
+# Fungsi untuk mengekstrak skill dari teks
 def extract_skills(text: str) -> List[str]:
     """Mengekstrak skill menggunakan word boundaries agar presisi."""
     found_skills = set()

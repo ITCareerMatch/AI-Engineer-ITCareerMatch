@@ -2,7 +2,7 @@ import re
 
 def clean_it_text(text: str) -> str:
     """
-    Membersihkan teks raw CV/Job dengan menghapus PII (Email, No HP, URL),
+    Membersihkan teks raw CV/Job dengan menghapus Email, No HP, URL,
     kata administratif, namun mempertahankan karakter esensial skill IT.
     """
     if not isinstance(text, str):
