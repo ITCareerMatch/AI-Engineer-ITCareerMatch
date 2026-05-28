@@ -69,7 +69,7 @@ class SBERTModel:
         return model
 
     # Fungsi untuk melakukan prediksi antara daftar deskripsi pekerjaan dan CV
-def predict_batch(self, job_descs: list, resumes: list, batch_size: int = 15) -> list:
+    def predict_batch(self, job_descs: list, resumes: list, batch_size: int = 15) -> list:
         """
         Melakukan prediksi secara bertahap untuk mencegah Out of Memory
         karena keterbatasan kapasitas RAM 1GB dari Railway.
