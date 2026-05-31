@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JobBot — Job Market Assistant</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f0f2f5;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* ── Shell ── */
+      .shell {
+        width: 100%;
+        max-width: 760px;
+        height: 92vh;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* ── Header ── */
+      .header {
+        padding: 16px 20px;
+        background: #185fa5;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+      .avatar {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+      .header-text h1 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+      }
+      .header-text p {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.75);
+        margin-top: 2px;
+      }
+      .header-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #4ade80;
+        box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
+      }
+
+      /* ── Voice selector di header ── */
+      .voice-select-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        padding: 4px 8px;
+      }
+      .voice-select-wrap label {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.85);
+        white-space: nowrap;
+      }
+      #voiceSelect {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 12px;
+        font-family: inherit;
+        cursor: pointer;
+        outline: none;
+        max-width: 130px;
+      }
+      #voiceSelect option {
+        background: #185fa5;
+        color: #fff;
+      }
+
+      /* ── Messages ── */
+      .messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        scroll-behavior: smooth;
+      }
+      .messages::-webkit-scrollbar {
+        width: 4px;
+      }
+      .messages::-webkit-scrollbar-thumb {
+        background: #d0d5dd;
+        border-radius: 4px;
+      }
+
+      /* ── Bubble ── */
+      .bubble-wrap {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+      }
+      .bubble-wrap.user {
+        flex-direction: row-reverse;
+      }
+
+      .bubble-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        flex-shrink: 0;
+      }
+      .bubble-wrap.bot .bubble-icon {
+        background: #e6f1fb;
+      }
+      .bubble-wrap.user .bubble-icon {
+        background: #185fa5;
+        color: #fff;
+      }
+
+      .bubble-content {
+        max-width: 75%;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .bubble-wrap.user .bubble-content {
+        align-items: flex-end;
+      }
+
+      .bubble {
+        padding: 12px 16px;
+        border-radius: 16px;
+        font-size: 14px;
+        line-height: 1.65;
+      }
+      .bubble-wrap.bot .bubble {
+        background: #f4f6f8;
+        color: #1a1a1a;
+        border-bottom-left-radius: 4px;
+      }
+      .bubble-wrap.user .bubble {
+        background: #185fa5;
+        color: #fff;
+        border-bottom-right-radius: 4px;
+      }
+      .bubble p {
+        margin-bottom: 8px;
+      }
+      .bubble p:last-child {
+        margin-bottom: 0;
+      }
+      .bubble strong {
+        font-weight: 600;
+      }
+      .bubble em {
+        font-style: italic;
+      }
+
+      /* ── TTS button ── */
+      .tts-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .tts-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border: 1px solid #d0d5dd;
+        border-radius: 20px;
+        background: #fff;
+        color: #374151;
+        font-size: 12px;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.15s;
+        flex-shrink: 0;
+      }
+      .tts-btn:hover:not(:disabled) {
+        background: #e6f1fb;
+        border-color: #378add;
+        color: #185fa5;
+      }
+      .tts-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .tts-btn.playing {
+        background: #185fa5;
+        border-color: #185fa5;
+        color: #fff;
+      }
+      .tts-btn svg {
+        width: 13px;
+        height: 13px;
+        flex-shrink: 0;
+      }
+      .tts-btn .spin {
+        display: inline-block;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ── Typing indicator ── */
+      .typing .bubble {
+        padding: 14px 18px;
+      }
+      .dots {
+        display: flex;
+        gap: 5px;
+      }
+      .dots span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #9ca3af;
+        animation: bounce 0.9s infinite;
+      }
+      .dots span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .dots span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      @keyframes bounce {
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+        }
+        30% {
+          transform: translateY(-6px);
+        }
+      }
+
+      /* ── Suggested questions ── */
+      .suggestions {
+        padding: 0 20px 12px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+      }
+      .sugg-btn {
+        font-size: 12px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        border: 1px solid #d0d5dd;
+        background: #fff;
+        color: #374151;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      .sugg-btn:hover {
+        background: #e6f1fb;
+        border-color: #378add;
+        color: #185fa5;
+      }
+
+      /* ── Input area ── */
+      .input-area {
+        padding: 12px 16px 16px;
+        border-top: 1px solid #f0f2f5;
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        flex-shrink: 0;
+      }
+      textarea {
+        flex: 1;
+        padding: 10px 14px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 14px;
+        color: #1a1a1a;
+        resize: none;
+        max-height: 120px;
+        overflow-y: auto;
+        line-height: 1.5;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      textarea:focus {
+        border-color: #185fa5;
+      }
+      textarea::placeholder {
+        color: #9ca3af;
+      }
+
+      .send-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #185fa5;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition:
+          background 0.15s,
+          transform 0.1s;
+      }
+      .send-btn:hover {
+        background: #0c447c;
+      }
+      .send-btn:active {
+        transform: scale(0.95);
+      }
+      .send-btn:disabled {
+        background: #d0d5dd;
+        cursor: not-allowed;
+      }
+      .send-btn svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: #fff;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* ── Welcome ── */
+      .welcome {
+        text-align: center;
+        padding: 32px 20px;
+        color: #6b7280;
+      }
+      .welcome .big-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+      }
+      .welcome h2 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+      }
+      .welcome p {
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      /* ── Error ── */
+      .error-bubble {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 13px;
+        text-align: center;
+      }
+
+      /* ── TTS info banner ── */
+      .tts-banner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: #f0f9ff;
+        border-bottom: 1px solid #bae6fd;
+        font-size: 12px;
+        color: #0369a1;
+        flex-shrink: 0;
+      }
+      .tts-banner svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <!-- Header -->
+      <div class="header">
+        <div class="avatar">🤖</div>
+        <div class="header-text">
+          <h1>JobBot</h1>
+          <p>Job Market Assistant — powered by Llama 3 via Groq</p>
+        </div>
+        <div class="header-right">
+          <!-- Voice selector -->
+          <div class="voice-select-wrap">
+            <label for="voiceSelect">🔊 Suara:</label>
+            <select id="voiceSelect" title="Pilih suara TTS">
+              <option value="troy">Troy ♂</option>
+              <option value="austin">Austin ♂</option>
+              <option value="daniel">Daniel ♂</option>
+              <option value="autumn">Autumn ♀</option>
+              <option value="diana">Diana ♀</option>
+              <option value="hannah">Hannah ♀</option>
+            </select>
+          </div>
+          <div class="status-dot" id="statusDot"></div>
+        </div>
+      </div>
+
+      <!-- TTS info banner -->
+      <div class="tts-banner">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+        Klik tombol <strong style="margin: 0 3px">🔊 Dengarkan</strong> di bawah
+        balasan bot untuk mengubah teks menjadi audio (maks 200 karakter). Pilih
+        suara dari dropdown di pojok kanan atas.
+      </div>
+
+      <!-- Messages -->
+      <div class="messages" id="messages">
+        <div class="welcome">
+          <div class="big-icon">💼</div>
+          <h2>Halo! Saya JobBot</h2>
+          <p>
+            Tanya apa saja seputar pasar kerja, skill, gaji, atau tips karir.<br />Saya
+            siap membantu! Balasan bot bisa diubah ke audio dengan tombol 🔊.
+          </p>
+        </div>
+      </div>
+
+      <!-- Suggested questions -->
+      <div class="suggestions" id="suggestions">
+        <button class="sugg-btn" onclick="sendSuggestion(this)">
+          Skill apa yang paling dicari di 2026?
+        </button>
+        <button class="sugg-btn" onclick="sendSuggestion(this)">
+          Berapa gaji Data Engineer di Jakarta?
+        </button>
+        <button class="sugg-btn" onclick="sendSuggestion(this)">
+          Cara pindah karir ke AI/ML?
+        </button>
+        <button class="sugg-btn" onclick="sendSuggestion(this)">
+          Industri mana yang banyak hiring sekarang?
+        </button>
+      </div>
+
+      <!-- Input -->
+      <div class="input-area">
+        <textarea
+          id="inputBox"
+          placeholder="Tanya seputar pasar kerja, skill, atau karir..."
+          rows="1"
+          oninput="autoResize(this)"
+          onkeydown="handleKey(event)"
+        ></textarea>
+        <button
+          class="send-btn"
+          id="sendBtn"
+          onclick="sendMessage()"
+          title="Kirim"
+        >
+          <svg viewBox="0 0 24 24">
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let history = [];
+      let currentAudio = null; // Audio object yang sedang dimainkan
+      let currentBtn = null; // Button yang sedang aktif
+
+      // Auto-resize textarea
+      function autoResize(el) {
+        el.style.height = "auto";
+        el.style.height = Math.min(el.scrollHeight, 120) + "px";
+      }
+
+      function handleKey(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      }
+
+      function sendSuggestion(btn) {
+        document.getElementById("inputBox").value = btn.textContent.trim();
+        document.getElementById("suggestions").style.display = "none";
+        sendMessage();
+      }
+
+      function scrollBottom() {
+        const el = document.getElementById("messages");
+        el.scrollTop = el.scrollHeight;
+      }
+
+      // ── SVG icons ──
+      const iconSpeak = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      </svg>`;
+
+      const iconStop = `<svg viewBox="0 0 24 24" fill="currentColor">
+        <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+      </svg>`;
+
+      const iconLoading = `<span class="spin">⏳</span>`;
+
+      // ── Bubble builder ──
+      function addBubble(role, content, withTTS = false) {
+        const wrap = document.createElement("div");
+        wrap.className = `bubble-wrap ${role}`;
+
+        const icon = document.createElement("div");
+        icon.className = "bubble-icon";
+        icon.textContent = role === "bot" ? "🤖" : "👤";
+
+        const bubbleContent = document.createElement("div");
+        bubbleContent.className = "bubble-content";
+
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        bubble.innerHTML = formatMarkdown(content);
+        bubbleContent.appendChild(bubble);
+
+        // Tambahkan tombol TTS untuk pesan bot
+        if (role === "bot" && withTTS) {
+          const ttsRow = document.createElement("div");
+          ttsRow.className = "tts-row";
+
+          const ttsBtn = document.createElement("button");
+          ttsBtn.className = "tts-btn";
+          ttsBtn.title = "Dengarkan balasan ini";
+          ttsBtn.innerHTML = `${iconSpeak} Dengarkan`;
+
+          // Simpan teks plain (tanpa markdown) untuk TTS
+          const plainText = content;
+
+          ttsBtn.addEventListener("click", () => {
+            handleTTS(ttsBtn, plainText);
+          });
+
+          ttsRow.appendChild(ttsBtn);
+          bubbleContent.appendChild(ttsRow);
+        }
+
+        wrap.appendChild(icon);
+        wrap.appendChild(bubbleContent);
+        document.getElementById("messages").appendChild(wrap);
+        scrollBottom();
+        return wrap;
+      }
+
+      // ── TTS handler ──
+      async function handleTTS(btn, text) {
+        // Jika tombol ini sedang playing → stop
+        if (btn === currentBtn && currentAudio && !currentAudio.paused) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+          resetTTSBtn(btn);
+          return;
+        }
+
+        // Stop audio sebelumnya jika ada
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+        if (currentBtn) resetTTSBtn(currentBtn);
+
+        currentBtn = btn;
+        btn.disabled = true;
+        btn.innerHTML = `${iconLoading} Memuat...`;
+        btn.classList.remove("playing");
+
+        const voice = document.getElementById("voiceSelect").value;
+
+        try {
+          const res = await fetch("/api/chatbot/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, voice }),
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || "TTS error");
+          }
+
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+
+          currentAudio = new Audio(url);
+          currentAudio.type = "audio/wav";
+
+          currentAudio.addEventListener("play", () => {
+            btn.disabled = false;
+            btn.innerHTML = `${iconStop} Stop`;
+            btn.classList.add("playing");
+          });
+
+          currentAudio.addEventListener("ended", () => {
+            resetTTSBtn(btn);
+            URL.revokeObjectURL(url);
+            currentAudio = null;
+            currentBtn = null;
+          });
+
+          currentAudio.addEventListener("error", () => {
+            resetTTSBtn(btn);
+            currentAudio = null;
+            currentBtn = null;
+          });
+
+          await currentAudio.play();
+        } catch (err) {
+          btn.disabled = false;
+          btn.innerHTML = `${iconSpeak} Error`;
+          btn.title = err.message;
+          setTimeout(() => {
+            btn.innerHTML = `${iconSpeak} Dengarkan`;
+            btn.title = "Dengarkan balasan ini";
+          }, 3000);
+          currentBtn = null;
+        }
+      }
+
+      function resetTTSBtn(btn) {
+        btn.disabled = false;
+        btn.innerHTML = `${iconSpeak} Dengarkan`;
+        btn.classList.remove("playing");
+        btn.title = "Dengarkan balasan ini";
+      }
+
+      function addTyping() {
+        const wrap = document.createElement("div");
+        wrap.className = "bubble-wrap bot typing";
+        wrap.id = "typing";
+        wrap.innerHTML = `
+      <div class="bubble-icon">🤖</div>
+      <div class="bubble-content"><div class="bubble"><div class="dots">
+        <span></span><span></span><span></span>
+      </div></div></div>`;
+        document.getElementById("messages").appendChild(wrap);
+        scrollBottom();
+      }
+
+      function removeTyping() {
+        const t = document.getElementById("typing");
+        if (t) t.remove();
+      }
+
+      function addError(msg) {
+        const el = document.createElement("div");
+        el.className = "error-bubble";
+        el.textContent = msg;
+        document.getElementById("messages").appendChild(el);
+        scrollBottom();
+      }
+
+      // Simple markdown → HTML
+      function formatMarkdown(text) {
+        return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/\*(.+?)\*/g, "<em>$1</em>")
+          .replace(
+            /`(.+?)`/g,
+            '<code style="background:#F0F2F5;padding:1px 5px;border-radius:4px;font-size:13px">$1</code>',
+          )
+          .split("\n")
+          .map((line) => (line.trim() ? `<p>${line}</p>` : ""))
+          .join("");
+      }
+
+      // Remove welcome screen on first message
+      function clearWelcome() {
+        const w = document.querySelector(".welcome");
+        if (w) w.remove();
+      }
+
+      async function sendMessage() {
+        const inputBox = document.getElementById("inputBox");
+        const sendBtn = document.getElementById("sendBtn");
+        const msg = inputBox.value.trim();
+        if (!msg) return;
+
+        clearWelcome();
+        inputBox.value = "";
+        inputBox.style.height = "auto";
+        sendBtn.disabled = true;
+
+        // Tampilkan pesan user
+        addBubble("user", msg, false);
+        addTyping();
+
+        try {
+          const res = await fetch("/api/chatbot/chat", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: msg, history: history }),
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || "Server error");
+          }
+
+          const data = await res.json();
+          removeTyping();
+          addBubble("bot", data.reply, true); // <-- withTTS = true
+          history = data.history;
+        } catch (err) {
+          removeTyping();
+          addError("Gagal menghubungi server: " + err.message);
+        } finally {
+          sendBtn.disabled = false;
+          inputBox.focus();
+        }
+      }
+
+      // Check server health on load
+      fetch("/api/chatbot/health")
+        .then((r) => r.json())
+        .then(() => {
+          document.getElementById("statusDot").style.background = "#4ADE80";
+        })
+        .catch(() => {
+          document.getElementById("statusDot").style.background = "#F87171";
+        });
+    </script>
+  </body>
+</html>
