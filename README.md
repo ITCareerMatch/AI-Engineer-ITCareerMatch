@@ -151,7 +151,7 @@ jupyter notebook finetune_sbert.ipynb
 
 | Layer | Teknologi |
 |-------|-----------|
-| Frontend | HTML / CSS / JavaScript |
+| Frontend | React.js |
 | Gateway | Express.js (Node.js) |
 | Chatbot Service | FastAPI (Python) |
 | LLM | Llama 3.3 70B via Groq API |
