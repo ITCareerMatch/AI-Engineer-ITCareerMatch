@@ -45,25 +45,52 @@ Dokumentasi detail masing-masing komponen tersedia di folder masing-masing.
 
 ```
 itcareermatch/
-├── chatbot/                    # Chatbot service
-│   ├── main.py                 # FastAPI — chatbot & TTS logic
-│   ├── app.js                  # Express.js — gateway & routing
+│
+├── chatbot/                           # Layanan Chatbot AI (Groq LLM)
+│   ├── main.py                        # FastAPI chatbot & TTS service
+│   ├── app.js                         # Express gateway
 │   ├── routes/
-│   │   └── chatbot.js          # Express router
+│   │   └── chatbot.js                 # Routing chatbot
 │   ├── static/
-│   │   └── index.html          # Frontend chatbot
+│   │   └── index.html                 # UI chatbot
 │   ├── .env.example
 │   ├── requirements.txt
 │   ├── package.json
-│   └── README.md               # Dokumentasi chatbot
+│   └── README.md
 │
-├── sbert/                      # SBERT model
-│   ├── finetune_sbert.ipynb    # Notebook training
-│   ├── final_dataset.csv       # Dataset (job_desc, resume, match_label)
-│   ├── save_model/             # Output model hasil training
-│   └── README.md               # Dokumentasi SBERT
+├── model_sbert/                       # Pengembangan & Training Model AI
+│   ├── finetune_sbert.ipynb           # Notebook fine-tuning SBERT
+│   ├── final_dataset.csv              # Dataset training
+│   ├── save_model/
+│   │   ├── itcareermatch_best.keras
+│   │   ├── itcareermatch_encoder.keras
+│   │   ├── itcareermatch_weights.h5
+│   │   └── itcareermatch_tokenizer/
+│   ├── inference.py                   # Pengujian inferensi model
+│   └── README.md
 │
-└── README.md                   # File ini
+├── sbert-service/                     # 
+│   ├── app/
+│   │   ├── model/                     # Direktori penyimpanan bobot model & tokenizer
+│   │   ├── routes/
+│   │   │   └── ai_match.py            # Endpoint utama (Job recomendation & Gap Analysis)
+│   │   ├── schemas/
+│   │   │   └── match.py               # Skema validasi request & response (Pydantic)
+│   │   ├── services/
+│   │   │   ├── analyzer.py            # Logika kalkulasi Gap Analysis
+│   │   │   ├── inference.py           # Modul inferensi model SBERT & Batch Chunking
+│   │   │   └── skill_extractor.py     # Modul ekstraksi entitas skill berbasis Regex
+│   │   ├── utils/
+│   │   │   ├── config.py              # Variabel konfigurasi & konstanta aplikasi
+│   │   │   └── text_cleaner.py        # Preprocessing teks CV dan Loker
+│   │   └── main.py                    # Entry point aplikasi & Security Middleware (API Key)
+│   ├── .python-version                # Penentu versi Python untuk Cloud Server
+│   ├── Procfile                       # Startup command untuk Railway
+│   ├── requirements.txt               # Daftar dependensi produksi (tensorflow-cpu, fastapi, dll)
+│   ├── test_api.py                    # Pengujian endpoint di server local (uvicorn) 
+│   └── README.md             
+│
+└── README.md
 ```
 
 ---
