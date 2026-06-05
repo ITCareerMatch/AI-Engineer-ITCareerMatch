@@ -15,6 +15,3 @@ env_new/
 node_modules/
 npm-debug.log
 yarn-error.log
-
-logs/
-logs/fit/

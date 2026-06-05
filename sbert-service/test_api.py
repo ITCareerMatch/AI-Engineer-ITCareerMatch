@@ -1,7 +1,18 @@
+import os
 import requests
 import json
+from dotenv import load_dotenv
 
-BASE_URL = "http://127.0.0.1:8000"
+dotenv_path = os.path.join(os.path.dirname(__file__), "app", ".env")
+load_dotenv(dotenv_path)
+
+BASE_URL = "http://127.0.0.1:8000" 
+INTERNAL_KEY = os.getenv("INTERNAL_API_KEY")
+
+headers = {
+    "Content-Type": "application/json",
+    "X-Internal-Request": INTERNAL_KEY or ""
+}
 
 # Dummy CV Text 
 cv_text = """Lulusan S1 Informatika dengan pengalaman tiga tahun sebagai Fullstack Web Developer, berfokus pada pengembangan aplikasi berbasis web menggunakan React.js, Tailwind CSS, dan Vite untuk frontend, serta Node.js dan Express.js untuk backend. Berpengalaman membangun sistem end-to-end mulai dari desain antarmuka, integrasi API, hingga deployment menggunakan platform seperti Vercel dan Railway. Terampil dalam pengelolaan database PostgreSQL, integrasi AI/ML, serta penerapan autentikasi dan keamanan aplikasi. Familiar dengan version control menggunakan Git/GitHub dan terbiasa bekerja dalam tim kolaboratif. Berorientasi pada pengembangan aplikasi web yang responsif, scalable, dan sesuai kebutuhan industri modern.
@@ -79,21 +90,29 @@ def test_batch_match():
         "cv_text": cv_text,
         "filtered_jobs": jobs
     }
-    response = requests.post(f"{BASE_URL}/internal/ai/match", json=payload)
+    response = requests.post(f"{BASE_URL}/internal/ai/match", json=payload, headers=headers)
     print(f"Status: {response.status_code}")
-    print(json.dumps(response.json(), indent=2))
+    try:
+        print(json.dumps(response.json(), indent=2))
+    except Exception:
+        print(response.text)
 
 def test_single_match():
     print("\n--- TEST ENDPOINT 2: SINGLE MATCH (/internal/ai/analyze-single) ---")
     payload = {
         "cv_text": cv_text,
-        "job": jobs[4]  
+        "job": jobs[4]
     }
-    response = requests.post(f"{BASE_URL}/internal/ai/analyze-single", json=payload)
+    response = requests.post(f"{BASE_URL}/internal/ai/analyze-single", json=payload, headers=headers)
     print(f"Status: {response.status_code}")
-    print(json.dumps(response.json(), indent=2))
+    try:
+        print(json.dumps(response.json(), indent=2))
+    except Exception:
+        print(response.text)
 
 if __name__ == "__main__":
+    if not INTERNAL_KEY:
+        print("Warning: INTERNAL_API_KEY not set in environment. Requests will likely be 401.")
     print("Memulai Testing API...")
     test_batch_match()
     test_single_match()
